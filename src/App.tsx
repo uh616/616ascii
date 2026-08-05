@@ -13,6 +13,7 @@ function App() {
   const [symbolSet, setSymbolSet] = useState<string>('Extended');
   const [randomPercent, setRandomPercent] = useState<number>(5);
   const [fontSize, setFontSize] = useState<number>(10);
+  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -42,10 +43,10 @@ function App() {
 
   // Re-draw when settings change (for images mostly)
   useEffect(() => {
-    if (mediaType === 'image') {
+    if (mediaType === 'image' && imageLoaded) {
       drawFrame();
     }
-  }, [width, scaleFactor, invert, symbolSet, randomPercent, fontSize, mediaType]);
+  }, [width, scaleFactor, invert, symbolSet, randomPercent, fontSize, mediaType, imageLoaded]);
 
   // Handle Video / Webcam loop
   useEffect(() => {
@@ -63,6 +64,7 @@ function App() {
     if (file.type.startsWith('video/')) {
       stopWebcam();
       setMediaType('video');
+      setImageLoaded(false);
       if (videoRef.current) {
         videoRef.current.srcObject = null;
         videoRef.current.src = url;
@@ -72,9 +74,10 @@ function App() {
     } else if (file.type.startsWith('image/')) {
       stopWebcam();
       setMediaType('image');
+      setImageLoaded(false);
       imageRef.current.src = url;
       imageRef.current.onload = () => {
-        drawFrame();
+        setImageLoaded(true);
       };
     }
   };
