@@ -50,14 +50,27 @@ export function imageToAsciiCanvas(
 
   // Calculate new dimensions
   const newWidth = Math.floor(width * scaleFactor);
-  let aspect = 1;
+  
+  let originalWidth = 1;
+  let originalHeight = 1;
+  
   if (imageObj instanceof HTMLVideoElement) {
-    aspect = imageObj.videoHeight / imageObj.videoWidth;
+    originalWidth = imageObj.videoWidth;
+    originalHeight = imageObj.videoHeight;
   } else if (imageObj instanceof HTMLImageElement) {
-    aspect = imageObj.naturalHeight / imageObj.naturalWidth;
+    originalWidth = imageObj.naturalWidth;
+    originalHeight = imageObj.naturalHeight;
   } else if (imageObj instanceof HTMLCanvasElement) {
-    aspect = imageObj.height / imageObj.width;
+    originalWidth = imageObj.width;
+    originalHeight = imageObj.height;
   }
+
+  // Prevent crash if image/video is not yet loaded
+  if (!originalWidth || !originalHeight || isNaN(originalWidth) || isNaN(originalHeight)) {
+    return;
+  }
+
+  const aspect = originalHeight / originalWidth;
   
   // Terminal characters are usually taller than they are wide.
   // We use 0.5 to 0.7 aspect correction depending on font.
