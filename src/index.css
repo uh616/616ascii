@@ -84,6 +84,35 @@ button, input, select, .no-drag, a, canvas, video, label, .main-content, .settin
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.actions-row .btn {
+  font-size: 0.85rem;
+  padding: 10px;
+}
+
+.sidebar {
+  width: 450px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 20px;
+  overflow-y: auto;
+}
+
 .btn {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -144,6 +173,52 @@ button, input, select, .no-drag, a, canvas, video, label, .main-content, .settin
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
+  cursor: pointer;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-value {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.checkbox-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.checkbox-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-item input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
   cursor: pointer;
 }
 

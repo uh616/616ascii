@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Camera, Save, Settings, Video, Image as ImageIcon } from 'lucide-react';
+import { Upload, Camera, Save, Video, Image as ImageIcon, Clipboard, RotateCcw } from 'lucide-react';
 import './App.css';
 import { SYMBOL_SETS, imageToAsciiCanvas } from './utils/ascii';
 
@@ -7,19 +7,43 @@ type MediaType = 'none' | 'image' | 'video' | 'webcam';
 
 function App() {
   const [mediaType, setMediaType] = useState<MediaType>('none');
-  const [width, setWidth] = useState<number>(120);
+  
+  // Basic Settings
+  const [width, setWidth] = useState<number>(100);
   const [scaleFactor, setScaleFactor] = useState<number>(1.0);
-  const [invert, setInvert] = useState<boolean>(false);
-  const [symbolSet, setSymbolSet] = useState<string>('Extended');
-  const [randomPercent, setRandomPercent] = useState<number>(5);
   const [fontSize, setFontSize] = useState<number>(10);
+  const [symbolSet, setSymbolSet] = useState<string>('Extended');
+  
+  // Image Adjustments
+  const [brightness, setBrightness] = useState<number>(100);
+  const [contrast, setContrast] = useState<number>(100);
+  const [saturation, setSaturation] = useState<number>(100);
+  const [hue, setHue] = useState<number>(0);
+  const [grayscale, setGrayscale] = useState<number>(0);
+  const [sepia, setSepia] = useState<number>(0);
+  const [invert, setInvert] = useState<boolean>(false);
+  
+  // Advanced Processing
+  const [thresholding, setThresholding] = useState<boolean>(false);
+  const [thresholdValue, setThresholdValue] = useState<number>(128);
+  const [edgeDetection, setEdgeDetection] = useState<boolean>(false);
+  const [edgeIntensity, setEdgeIntensity] = useState<number>(1);
+  const [sharpness, setSharpness] = useState<boolean>(false);
+  const [sharpnessValue, setSharpnessValue] = useState<number>(5);
+  const [spaceDensity, setSpaceDensity] = useState<number>(0);
+  
+  // Engine
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const imageRef = useRef<HTMLImageElement>(new Image());
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
 
   // Core drawing function
   const drawFrame = () => {
@@ -27,15 +51,17 @@ function App() {
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
+    const options = {
+      width, scaleFactor, invert, symbolSetName: symbolSet, randomizationPercentage: 0, fontSize,
+      brightness, contrast, saturation, hue, grayscale, sepia,
+      thresholding, thresholdValue, edgeDetection, edgeIntensity, sharpness, sharpnessValue, spaceDensity
+    };
+
     if (mediaType === 'image' && imageRef.current.src) {
-      imageToAsciiCanvas(ctx, imageRef.current, {
-        width, scaleFactor, invert, symbolSetName: symbolSet, randomizationPercentage: randomPercent, fontSize
-      });
+      imageToAsciiCanvas(ctx, imageRef.current, options);
     } else if ((mediaType === 'video' || mediaType === 'webcam') && videoRef.current) {
       if (videoRef.current.readyState >= 2) {
-        imageToAsciiCanvas(ctx, videoRef.current, {
-          width, scaleFactor, invert, symbolSetName: symbolSet, randomizationPercentage: randomPercent, fontSize
-        });
+        imageToAsciiCanvas(ctx, videoRef.current, options);
       }
       animationRef.current = requestAnimationFrame(drawFrame);
     }
@@ -46,7 +72,12 @@ function App() {
     if (mediaType === 'image' && imageLoaded) {
       drawFrame();
     }
-  }, [width, scaleFactor, invert, symbolSet, randomPercent, fontSize, mediaType, imageLoaded]);
+  }, [
+    width, scaleFactor, fontSize, symbolSet,
+    brightness, contrast, saturation, hue, grayscale, sepia, invert,
+    thresholding, thresholdValue, edgeDetection, edgeIntensity, sharpness, sharpnessValue, spaceDensity,
+    mediaType, imageLoaded
+  ]);
 
   // Handle Video / Webcam loop
   useEffect(() => {
@@ -56,11 +87,14 @@ function App() {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [mediaType, width, scaleFactor, invert, symbolSet, randomPercent, fontSize]);
+  }, [
+    mediaType, width, scaleFactor, fontSize, symbolSet,
+    brightness, contrast, saturation, hue, grayscale, sepia, invert,
+    thresholding, thresholdValue, edgeDetection, edgeIntensity, sharpness, sharpnessValue, spaceDensity
+  ]);
 
   const handleFile = (file: File) => {
     const url = URL.createObjectURL(file);
-    
     if (file.type.startsWith('video/')) {
       stopWebcam();
       setMediaType('video');
@@ -86,8 +120,6 @@ function App() {
     const file = e.target.files?.[0];
     if (file) handleFile(file);
   };
-
-  const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -129,10 +161,6 @@ function App() {
     }
   };
 
-  const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
-
   const handleSaveImage = async () => {
     if (!canvasRef.current) return;
     const dataUrl = canvasRef.current.toDataURL('image/png');
@@ -151,6 +179,41 @@ function App() {
       link.href = dataUrl;
       link.click();
     }
+  };
+
+  const handleCopyClipboard = async () => {
+    if (!canvasRef.current) return;
+    try {
+      canvasRef.current.toBlob(async (blob) => {
+        if (!blob) return;
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        alert("Image copied to clipboard!");
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to copy to clipboard.");
+    }
+  };
+
+  const resetFilters = () => {
+    setWidth(100);
+    setScaleFactor(1.0);
+    setFontSize(10);
+    setBrightness(100);
+    setContrast(100);
+    setSaturation(100);
+    setHue(0);
+    setGrayscale(0);
+    setSepia(0);
+    setInvert(false);
+    setThresholding(false);
+    setThresholdValue(128);
+    setEdgeDetection(false);
+    setEdgeIntensity(1);
+    setSharpness(false);
+    setSharpnessValue(5);
+    setSpaceDensity(0);
   };
 
   const toggleRecording = () => {
@@ -211,66 +274,158 @@ function App() {
         <div className="sidebar glass-panel">
           <div className="title-area">
             <img src="./favicon.ico" alt="Logo" className="logo" />
-            <h1>616 ASCII</h1>
+            <h1>616 ASCII STUDIO</h1>
           </div>
           
           <div className="settings-group">
-            <div className="setting-item">
-              <label>Symbol Set</label>
-              <select className="select-field" value={symbolSet} onChange={e => setSymbolSet(e.target.value)}>
-                {Object.keys(SYMBOL_SETS).map(key => (
-                  <option key={key} value={key}>{key}</option>
-                ))}
-              </select>
-            </div>
+            {/* 2-Column Grid */}
+            <div className="settings-grid">
+              
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Characters</label>
+                  <span className="setting-value">{width}</span>
+                </div>
+                <input type="range" min="20" max="300" value={width} onChange={e => setWidth(Number(e.target.value))} />
+              </div>
 
-            <div className="setting-item">
-              <label>Width (chars: {width})</label>
-              <input type="range" min="20" max="300" value={width} onChange={e => setWidth(Number(e.target.value))} />
-            </div>
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Font Size</label>
+                  <span className="setting-value">{fontSize}px</span>
+                </div>
+                <input type="range" min="4" max="24" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} />
+              </div>
 
-            <div className="setting-item">
-              <label>Scale Factor: {scaleFactor}</label>
-              <input type="range" min="0.1" max="3.0" step="0.1" value={scaleFactor} onChange={e => setScaleFactor(Number(e.target.value))} />
-            </div>
-            
-            <div className="setting-item">
-              <label>Font Size: {fontSize}px</label>
-              <input type="range" min="4" max="24" value={fontSize} onChange={e => setFontSize(Number(e.target.value))} />
-            </div>
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Brightness</label>
+                  <span className="setting-value">{brightness}%</span>
+                </div>
+                <input type="range" min="0" max="200" value={brightness} onChange={e => setBrightness(Number(e.target.value))} />
+              </div>
 
-            <div className="setting-item">
-              <label>Random Noise: {randomPercent}%</label>
-              <input type="range" min="0" max="100" value={randomPercent} onChange={e => setRandomPercent(Number(e.target.value))} />
-            </div>
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Contrast</label>
+                  <span className="setting-value">{contrast}%</span>
+                </div>
+                <input type="range" min="0" max="200" value={contrast} onChange={e => setContrast(Number(e.target.value))} />
+              </div>
 
-            <label className="checkbox-item">
-              <input type="checkbox" checked={invert} onChange={e => setInvert(e.target.checked)} />
-              Invert Colors
-            </label>
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Saturation</label>
+                  <span className="setting-value">{saturation}%</span>
+                </div>
+                <input type="range" min="0" max="200" value={saturation} onChange={e => setSaturation(Number(e.target.value))} />
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Hue</label>
+                  <span className="setting-value">{hue}°</span>
+                </div>
+                <input type="range" min="0" max="360" value={hue} onChange={e => setHue(Number(e.target.value))} />
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Grayscale</label>
+                  <span className="setting-value">{grayscale}%</span>
+                </div>
+                <input type="range" min="0" max="100" value={grayscale} onChange={e => setGrayscale(Number(e.target.value))} />
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Sepia</label>
+                  <span className="setting-value">{sepia}%</span>
+                </div>
+                <input type="range" min="0" max="100" value={sepia} onChange={e => setSepia(Number(e.target.value))} />
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-header">
+                  <label>Space Density</label>
+                  <span className="setting-value">{spaceDensity}%</span>
+                </div>
+                <input type="range" min="0" max="100" value={spaceDensity} onChange={e => setSpaceDensity(Number(e.target.value))} />
+              </div>
+
+              <label className="checkbox-item" style={{ marginTop: 'auto', marginBottom: '8px' }}>
+                <input type="checkbox" checked={invert} onChange={e => setInvert(e.target.checked)} />
+                Invert Colors
+              </label>
+
+              <div className="setting-item">
+                <label className="checkbox-item" style={{ padding: '0', background: 'transparent' }}>
+                  <input type="checkbox" checked={sharpness} onChange={e => setSharpness(e.target.checked)} />
+                  Sharpness
+                </label>
+                <input type="range" min="1" max="10" value={sharpnessValue} onChange={e => setSharpnessValue(Number(e.target.value))} disabled={!sharpness} />
+              </div>
+
+              <div className="setting-item">
+                <label className="checkbox-item" style={{ padding: '0', background: 'transparent' }}>
+                  <input type="checkbox" checked={thresholding} onChange={e => setThresholding(e.target.checked)} />
+                  Thresholding
+                </label>
+                <input type="range" min="0" max="255" value={thresholdValue} onChange={e => setThresholdValue(Number(e.target.value))} disabled={!thresholding} />
+              </div>
+
+              <div className="setting-item" style={{ gridColumn: '1 / -1' }}>
+                <label className="checkbox-item" style={{ padding: '0', background: 'transparent' }}>
+                  <input type="checkbox" checked={edgeDetection} onChange={e => setEdgeDetection(e.target.checked)} />
+                  Edge Detection
+                </label>
+                <input type="range" min="1" max="5" value={edgeIntensity} onChange={e => setEdgeIntensity(Number(e.target.value))} disabled={!edgeDetection} />
+              </div>
+
+              <div className="setting-item" style={{ gridColumn: '1 / -1' }}>
+                <label>Symbol Set</label>
+                <select className="select-field" value={symbolSet} onChange={e => setSymbolSet(e.target.value)}>
+                  {Object.keys(SYMBOL_SETS).map(key => (
+                    <option key={key} value={key}>{key}</option>
+                  ))}
+                </select>
+              </div>
+
+            </div>
           </div>
 
           <div className="actions">
-            <label className="btn btn-primary">
-              <Upload size={18} />
-              Open Media
-              <input type="file" accept="image/*,video/*" hidden onChange={handleFileUpload} />
-            </label>
             
-            <button className="btn" onClick={mediaType === 'webcam' ? stopWebcam : startWebcam}>
-              <Camera size={18} />
-              {mediaType === 'webcam' ? 'Stop Webcam' : 'Use Webcam'}
-            </button>
+            {/* Quick Actions Row */}
+            <div className="actions-row" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
+              <button className="btn btn-primary" onClick={handleCopyClipboard} disabled={mediaType === 'none'} title="Copy to Clipboard">
+                <Clipboard size={16} />
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveImage} disabled={mediaType === 'none'} title="Save as PNG">
+                <Save size={16} />
+              </button>
+              <label className="btn btn-primary" title="Open Media">
+                <Upload size={16} />
+                <input type="file" accept="image/*,video/*" hidden onChange={handleFileUpload} />
+              </label>
+              <button className="btn" onClick={resetFilters} title="Reset Filters">
+                <RotateCcw size={16} />
+              </button>
+            </div>
 
-            <button className="btn" onClick={handleSaveImage} disabled={mediaType === 'none'}>
-              <Save size={18} />
-              Save Image (PNG)
-            </button>
-            
-            <button className="btn" onClick={toggleRecording} disabled={mediaType === 'none'} style={{ backgroundColor: isRecording ? '#ff3366' : '' }}>
-              <Video size={18} />
-              {isRecording ? 'Stop & Save Video' : 'Record Video'}
-            </button>
+            {/* Media Row */}
+            <div className="actions-row">
+              <button className="btn" onClick={mediaType === 'webcam' ? stopWebcam : startWebcam}>
+                <Camera size={16} />
+                {mediaType === 'webcam' ? 'Stop' : 'Webcam'}
+              </button>
+              
+              <button className="btn" onClick={toggleRecording} disabled={mediaType === 'none'} style={{ backgroundColor: isRecording ? '#ff3366' : '' }}>
+                <Video size={16} />
+                {isRecording ? 'Stop' : 'Record'}
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -281,7 +436,7 @@ function App() {
               <div className="empty-state">
                 <ImageIcon size={64} />
                 <h2>No Media Loaded</h2>
-                <p>Open an image, video, or start the webcam.</p>
+                <p>Drag & drop an image/video here or open from menu.</p>
               </div>
             ) : (
               <canvas ref={canvasRef} className="preview-canvas" />
