@@ -91,8 +91,11 @@ export function imageToAsciiCanvas(
   const data = imgData.data;
 
   // Render to target canvas
-  const targetWidth = newWidth * fontSize;
-  const targetHeight = newHeight * fontSize;
+  const charHeight = fontSize;
+  const charWidth = fontSize * aspectCorrection;
+  
+  const targetWidth = newWidth * charWidth;
+  const targetHeight = newHeight * charHeight;
   
   const targetCanvas = ctx.canvas;
   if (targetCanvas.width !== targetWidth || targetCanvas.height !== targetHeight) {
@@ -100,11 +103,12 @@ export function imageToAsciiCanvas(
     targetCanvas.height = targetHeight;
   }
 
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#030303"; // Match app background
   ctx.fillRect(0, 0, targetWidth, targetHeight);
   
   ctx.fillStyle = "#ffffff";
-  ctx.font = `${fontSize}px Courier New, monospace`;
+  // Bold font helps visibility
+  ctx.font = `600 ${fontSize}px "Courier New", monospace`;
   ctx.textBaseline = "top";
 
   for (let y = 0; y < newHeight; y++) {
@@ -130,7 +134,7 @@ export function imageToAsciiCanvas(
         char = symbols[Math.floor(Math.random() * symbols.length)];
       }
 
-      ctx.fillText(char, x * fontSize, y * fontSize);
+      ctx.fillText(char, x * charWidth, y * charHeight);
     }
   }
 }
