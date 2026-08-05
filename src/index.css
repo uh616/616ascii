@@ -30,11 +30,14 @@ body {
 }
 
 /* Interactive elements should not drag the window */
-.app-container {
+button, input, select, .no-drag, a, canvas, video, label, .main-content {
   -webkit-app-region: no-drag;
 }
-.title-area {
+.app-container {
   -webkit-app-region: drag;
+}
+.main-content {
+  -webkit-app-region: no-drag;
 }
 
 /* Scrollbar */
