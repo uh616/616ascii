@@ -25,13 +25,16 @@
 .logo {
   width: 40px;
   height: 40px;
-  filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
 }
 
 .title-area h1 {
   font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(to right, #ffffff, #00ffcc);
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(to right, #ffffff, #888888);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
