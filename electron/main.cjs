@@ -29,6 +29,11 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Предотвращаем загрузку файлов в браузере при перетаскивании
+  mainWindow.webContents.on('will-navigate', (event) => {
+    event.preventDefault();
+  });
 }
 
 app.whenReady().then(() => {
