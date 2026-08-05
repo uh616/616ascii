@@ -1,5 +1,7 @@
 {
   "name": "616ascii-app",
+  "description": "616minutes ASCII Art Generator",
+  "author": "uh616",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,7 +11,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "electron:start": "cross-env BROWSER=none concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:start": "cross-env BROWSER=none concurrently \"vite\" \"wait-on http://127.0.0.1:5173 && electron .\"",
     "electron:build": "vite build && electron-builder"
   },
   "dependencies": {

@@ -1,32 +1,35 @@
-# React + TypeScript + Vite
+# 616minutes ASCII - Версия 2.0 (Modern Edition)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**616minutes ASCII** — это невероятно красивое и мощное десктопное приложение для превращения любых изображений, видео и потока с веб-камеры в стильный ASCII-арт в реальном времени.
 
-Currently, two official plugins are available:
+## Особенности
+- **Живой предпросмотр (Live Preview)**: Обработка видео и веб-камеры происходит мгновенно на скорости 60 FPS благодаря аппаратному ускорению через HTML5 Canvas.
+- **Премиальный дизайн**: Современный интерфейс 2026 года с эффектами матового стекла (glassmorphism), плавными анимациями и темной темой.
+- **Огромный выбор символов**: Поддержка классических ASCII-символов, кириллицы, японских иероглифов, эмодзи и многих других пресетов.
+- **Гибкие настройки**: Изменение плотности символов, масштаба, размера шрифта, добавление визуального шума и инверсии цветов.
+- **Сохранение на диск**: Экспорт готовых изображений в `.png` и возможность записывать живой видеопоток в `.webm` напрямую на жесткий диск.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Как запустить
 
-## React Compiler
+### Для пользователей (Запуск приложения)
+Скачайте готовый `.exe` установщик из вкладки [Releases](../../releases) и просто установите программу.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Для разработчиков
+Убедитесь, что у вас установлен Node.js.
+```bash
+# Клонируйте репозиторий
+git clone https://github.com/uh616/616ascii.git
+cd 616ascii
 
-## Expanding the Oxlint configuration
+# Установите зависимости
+npm install
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+# Запустите приложение в режиме разработки
+npm run electron:start
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# Соберите .exe файл самостоятельно
+npm run electron:build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+*Сделано с любовью для идеального ASCII-экспириенса.*
