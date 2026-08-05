@@ -57,10 +57,7 @@ function App() {
     };
   }, [mediaType, width, scaleFactor, invert, symbolSet, randomPercent, fontSize]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
+  const handleFile = (file: File) => {
     const url = URL.createObjectURL(file);
     
     if (file.type.startsWith('video/')) {
@@ -80,6 +77,30 @@ function App() {
         drawFrame();
       };
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
   };
 
   const startWebcam = async () => {
@@ -175,7 +196,13 @@ function App() {
   return (
     <>
       <div className="bg-animation" />
-      <div className="app-container">
+      <div 
+        className="app-container" 
+        onDragOver={handleDragOver} 
+        onDragLeave={handleDragLeave} 
+        onDrop={handleDrop}
+        style={{ border: isDragging ? '2px dashed var(--accent-color)' : 'none' }}
+      >
         
         {/* Sidebar */}
         <div className="sidebar glass-panel">
