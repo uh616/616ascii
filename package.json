@@ -3,7 +3,7 @@
   "description": "616minutes ASCII Art Generator",
   "author": "uh616",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -15,6 +15,7 @@
     "electron:build": "vite build && electron-builder"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "lucide-react": "^1.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
@@ -48,6 +49,13 @@
     "files": [
       "dist/**/*",
       "electron/**/*"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "uh616",
+        "repo": "616ascii"
+      }
     ]
   }
 }
