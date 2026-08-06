@@ -1,35 +1,50 @@
-# 616minutes ASCII - Версия 2.0 (Modern Edition)
+---
 
-**616minutes ASCII** — это невероятно красивое и мощное десктопное приложение для превращения любых изображений, видео и потока с веб-камеры в стильный ASCII-арт в реальном времени.
+# 616minutes ASCII Studio
 
-## Особенности
-- **Живой предпросмотр (Live Preview)**: Обработка видео и веб-камеры происходит мгновенно на скорости 60 FPS благодаря аппаратному ускорению через HTML5 Canvas.
-- **Премиальный дизайн**: Современный интерфейс 2026 года с эффектами матового стекла (glassmorphism), плавными анимациями и темной темой.
-- **Огромный выбор символов**: Поддержка классических ASCII-символов, кириллицы, японских иероглифов, эмодзи и многих других пресетов.
-- **Гибкие настройки**: Изменение плотности символов, масштаба, размера шрифта, добавление визуального шума и инверсии цветов.
-- **Сохранение на диск**: Экспорт готовых изображений в `.png` и возможность записывать живой видеопоток в `.webm` напрямую на жесткий диск.
+A powerful, hardware-accelerated ASCII art generator. Pre-process images, videos, and live webcam feeds with Photoshop-like filters (Brightness, Contrast, Edge Detection, Thresholding) and convert them to beautiful ASCII art instantly. Built with React and Electron for maximum performance and a seamless experience.
 
-## Как запустить
-
-### Для пользователей (Запуск приложения)
-Скачайте готовый `.exe` установщик из вкладки [Releases](../../releases) и просто установите программу.
-
-### Для разработчиков
-Убедитесь, что у вас установлен Node.js.
-```bash
-# Клонируйте репозиторий
-git clone https://github.com/uh616/616ascii.git
-cd 616ascii
-
-# Установите зависимости
-npm install
-
-# Запустите приложение в режиме разработки
-npm run electron:start
-
-# Соберите .exe файл самостоятельно
-npm run electron:build
-```
+[![GitHub stars](https://img.shields.io/github/stars/uh616/616ascii?style=flat-square&logo=github&color=gold)](https://github.com/uh616/616ascii/stargazers)
+[![GitHub downloads](https://img.shields.io/github/downloads/uh616/616ascii/total?style=flat-square&logo=github&color=brightgreen&label=downloads)](https://github.com/uh616/616ascii/releases)
+[![GitHub release](https://img.shields.io/github/v/release/uh616/616ascii?style=flat-square&logo=github&color=blue)](https://github.com/uh616/616ascii/releases/latest)
+[![Visitors](https://visitor-badge.laobi.icu/badge?page_id=uh616.616ascii&style=flat-square&color=red)](https://github.com/uh616/616ascii)
 
 ---
-*Сделано с любовью для идеального ASCII-экспириенса.*
+
+## ⬇️ Download
+
+**[→ Latest Release](https://github.com/uh616/616ascii/releases/latest)**
+
+---
+
+## 🚀 Installation & Usage
+
+1. Download the latest **`616minutes ASCII Setup X.X.X.exe`** from the [Releases page](https://github.com/uh616/616ascii/releases/latest).
+2. Run the installer and launch the app.
+3. Drag and drop any image or video file into the window, or click **Open Media** to select a file.
+4. Tweak the sliders (Brightness, Contrast, Sharpness, Edge Detection) to get the perfect ASCII look in real-time.
+5. Hit **Save as PNG** or use the **Record Video** button to save your masterpiece!
+
+> ⚠️ Windows Defender may show an "Unknown publisher" warning since the exe isn't signed. Click **"More info" → "Run anyway"** to proceed.
+
+---
+
+## 📖 Features & UI
+
+The studio provides a full suite of image processing tools directly in a beautiful Glassmorphism UI:
+
+| Feature | Description |
+|---|---|
+| **Live Canvas Engine** | Renders ASCII up to 60 FPS using hardware acceleration. |
+| **Color Correction** | Adjust Brightness, Contrast, Saturation, Hue, and Sepia on the fly. |
+| **Advanced Filters** | Edge Detection (Sobel kernel), Sharpness, and Thresholding. |
+| **Space Density** | Add negative space to your art to make it look lighter or glitchy. |
+| **Webcam Support** | Turn your webcam feed into live ASCII art. |
+| **Quick Actions** | Instantly copy the output to your clipboard as a PNG. |
+
+---
+
+## 🌐 Links
+
+- **My Website:** [https://6i6.lol/](https://6i6.lol/)
+
