@@ -46,7 +46,29 @@ app.whenReady().then(() => {
   });
 
   if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.on('update-available', () => {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Обновление',
+        message: 'Найдена новая версия! Скачиваем обновление в фоне...',
+        buttons: ['ОК']
+      });
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+      dialog.showMessageBox({
+        type: 'question',
+        title: 'Обновление готово',
+        message: 'Новая версия успешно скачана. Перезапустить программу для установки прямо сейчас?',
+        buttons: ['Перезапустить', 'Позже']
+      }).then((result) => {
+        if (result.response === 0) {
+          autoUpdater.quitAndInstall();
+        }
+      });
+    });
+
+    autoUpdater.checkForUpdates();
   }
 });
 
