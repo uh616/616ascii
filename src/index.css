@@ -149,7 +149,7 @@ button, input, select, .no-drag, a, canvas, video, label, .main-content, .settin
 }
 
 .input-field, .select-field {
-  background: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--glass-border);
   color: #fff;
   padding: 12px 14px;
@@ -163,7 +163,7 @@ button, input, select, .no-drag, a, canvas, video, label, .main-content, .settin
 
 .input-field:focus, .select-field:focus, .select-field:hover {
   border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .select-field {
