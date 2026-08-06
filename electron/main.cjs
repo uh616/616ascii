@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
 const fs = require('fs');
 
 function createWindow() {
@@ -22,6 +21,8 @@ function createWindow() {
     },
     backgroundColor: '#0d1117'
   });
+
+  const isDev = !app.isPackaged;
 
   if (isDev) {
     mainWindow.loadURL('http://127.0.0.1:5173');
