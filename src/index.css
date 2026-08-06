@@ -30,7 +30,7 @@ body {
 }
 
 /* Interactive elements should not drag the window */
-button, input, select, .no-drag, a, canvas, video, label, .main-content, .settings-group, .actions {
+button, input, select, .no-drag, a, canvas, video, label, .main-content, .settings-group, .actions, .sidebar {
   -webkit-app-region: no-drag;
 }
 .app-container {
@@ -38,6 +38,9 @@ button, input, select, .no-drag, a, canvas, video, label, .main-content, .settin
 }
 .main-content {
   -webkit-app-region: no-drag;
+}
+.title-area {
+  -webkit-app-region: drag;
 }
 
 /* Scrollbar */
