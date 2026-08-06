@@ -36,6 +36,8 @@ function App() {
   const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -216,7 +218,88 @@ function App() {
     setSpaceDensity(0);
   };
 
+  const handleSaveVideo = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    setIsProcessingVideo(true);
+    setVideoProgress(0);
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    const wasPlaying = !video.paused;
+    const wasLooping = video.loop;
+    
+    video.pause();
+    video.loop = false;
+    video.currentTime = 0;
+
+    await new Promise<void>(resolve => {
+      const onSeeked = () => {
+        video.removeEventListener('seeked', onSeeked);
+        resolve();
+      };
+      video.addEventListener('seeked', onSeeked);
+    });
+
+    const stream = canvas.captureStream(60);
+    const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    const chunks: Blob[] = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        // @ts-ignore
+        if (window.electronAPI) {
+          // @ts-ignore
+          const result = await window.electronAPI.saveFile({
+            title: 'Save ASCII Video',
+            defaultPath: '616ascii-video.webm',
+            filters: [{ name: 'Videos', extensions: ['webm'] }]
+          }, dataUrl);
+          if (result.success) console.log('Saved video to', result.filePath);
+        } else {
+          const link = document.createElement('a');
+          link.download = '616ascii-video.webm';
+          link.href = dataUrl;
+          link.click();
+        }
+        setIsProcessingVideo(false);
+        setVideoProgress(0);
+        
+        video.loop = wasLooping;
+        if (wasPlaying) video.play();
+      };
+      reader.readAsDataURL(blob);
+    };
+
+    video.onended = () => {
+      mediaRecorder.stop();
+      video.onended = null;
+      video.ontimeupdate = null;
+    };
+
+    video.ontimeupdate = () => {
+      if (video.duration) {
+        setVideoProgress(Math.round((video.currentTime / video.duration) * 100));
+      }
+    };
+
+    mediaRecorder.start();
+    video.play();
+  };
+
   const toggleRecording = () => {
+    if (mediaType === 'video') {
+      handleSaveVideo();
+      return;
+    }
+    
     if (isRecording) {
       mediaRecorderRef.current?.stop();
       setIsRecording(false);
@@ -239,14 +322,14 @@ function App() {
           if (window.electronAPI) {
             // @ts-ignore
             const result = await window.electronAPI.saveFile({
-              title: 'Save ASCII Video',
-              defaultPath: '616ascii-video.webm',
+              title: 'Save ASCII Webcam',
+              defaultPath: '616ascii-webcam.webm',
               filters: [{ name: 'Videos', extensions: ['webm'] }]
             }, dataUrl);
-            if (result.success) console.log('Saved video to', result.filePath);
+            if (result.success) console.log('Saved webcam to', result.filePath);
           } else {
             const link = document.createElement('a');
-            link.download = '616ascii-video.webm';
+            link.download = '616ascii-webcam.webm';
             link.href = dataUrl;
             link.click();
           }
@@ -256,6 +339,16 @@ function App() {
       
       mediaRecorderRef.current.start();
       setIsRecording(true);
+    }
+  };
+
+  const toggleVideoPlayPause = () => {
+    if (mediaType === 'video' && videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
+      }
     }
   };
 
@@ -420,9 +513,9 @@ function App() {
                 {mediaType === 'webcam' ? 'Stop' : 'Webcam'}
               </button>
               
-              <button className="btn" onClick={toggleRecording} disabled={mediaType === 'none'} style={{ backgroundColor: isRecording ? '#ff3366' : '' }}>
+              <button className="btn" onClick={toggleRecording} disabled={mediaType === 'none' || isProcessingVideo} style={{ backgroundColor: isRecording || isProcessingVideo ? 'var(--accent-color)' : '', color: isRecording || isProcessingVideo ? '#000' : '' }}>
                 <Video size={16} />
-                {isRecording ? 'Stop' : 'Record'}
+                {mediaType === 'video' ? (isProcessingVideo ? `Saving ${videoProgress}%` : 'Save Video') : (isRecording ? 'Stop' : 'Record')}
               </button>
             </div>
 
@@ -439,7 +532,12 @@ function App() {
                 <p>Drag & drop an image/video here or open from menu.</p>
               </div>
             ) : (
-              <canvas ref={canvasRef} className="preview-canvas" />
+              <canvas 
+                ref={canvasRef} 
+                className="preview-canvas" 
+                onClick={toggleVideoPlayPause} 
+                style={{ cursor: mediaType === 'video' ? 'pointer' : 'default' }}
+              />
             )}
             <video ref={videoRef} className="hidden-video" muted playsInline />
           </div>
